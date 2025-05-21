@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DOGECALC</title>
+  <style>
+    body {
+      background-color: #f1c40f;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo img {
+      height: 60px;
+      margin-right: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+    input, button {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 18px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #calculateButton {
+      background-color: white;
+      color: black;
+      font-weight: bold;
+    }
+    #clearButton {
+      background-color: #8b0000;
+      color: white;
+      font-weight: bold;
+    }
+    #result {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .result-image {
+      max-width: 90%;
+      height: auto;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="Doge_Logo.png" alt="Doge Logo" />
+    <h1>DOGECALC</h1>
+  </div>
+  <input type="number" id="buyPrice" placeholder="Buy Price ($)" step="0.0001" />
+  <input type="number" id="sellPrice" placeholder="Sell Price ($)" step="0.0001" />
+  <input type="number" id="investment" placeholder="Investment Amount ($)" step="0.01" />
+  <input type="number" id="fee" placeholder="Fee (% per trade)" value="0.4" step="0.1" />
+  <button id="calculateButton" onclick="calculate()">Calculate</button>
+  <button id="clearButton" onclick="clearAll()">Clear All</button>
+  <div id="result"></div>
+
+  <script>
+    function calculate() {
+      const buy = parseFloat(document.getElementById("buyPrice").value);
+      const sell = parseFloat(document.getElementById("sellPrice").value);
+      const usd = parseFloat(document.getElementById("investment").value);
+      const fee = parseFloat(document.getElementById("fee").value) / 100;
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = "";
+
+      if (isNaN(buy) || isNaN(sell) || isNaN(usd) || isNaN(fee)) {
+        resultBox.innerHTML = "<p style='color:red;'>Please fill in all fields correctly.</p>";
+        return;
+      }
+
+      const doge = usd / buy;
+      const buyFee = usd * fee;
+      const sellProceeds = doge * sell;
+      const sellFee = sellProceeds * fee;
+      const net = sellProceeds - buyFee - sellFee;
+      const profit = net - usd;
+
+      const resultImg = document.createElement("img");
+      resultImg.classList.add("result-image");
+
+      if (profit >= 0) {
+        resultBox.style.color = "green";
+        resultImg.src = "Doge_Profit.png";
+      } else {
+        resultBox.style.color = "red";
+        resultImg.src = "Doge_Loss.png";
+      }
+
+      resultBox.appendChild(resultImg);
+      resultBox.innerHTML += `<p>You'd receive $${net.toFixed(2)} after fees.<br>Profit: $${profit.toFixed(2)}</p>`;
+    }
+
+    function clearAll() {
+      document.getElementById("buyPrice").value = "";
+      document.getElementById("sellPrice").value = "";
+      document.getElementById("investment").value = "";
+      document.getElementById("fee").value = "0.4";
+      document.getElementById("result").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
