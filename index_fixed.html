@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOGECALC</title>
+  <style>
+    body {
+      background-color: #f1c40f;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo img {
+      height: 80px;
+      margin-right: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+    input, button {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 18px;
+    }
+    #clearButton {
+      background-color: #a93226;
+      color: white;
+    }
+    #result {
+      background-color: white;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+    #result img {
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="Doge_Logo.png" alt="Doge Logo">
+    <h1>DOGECALC</h1>
+  </div>
+  <input type="number" id="buyPrice" placeholder="Buy Price ($)" step="0.0001" />
+  <input type="number" id="sellPrice" placeholder="Sell Price ($)" step="0.0001" />
+  <input type="number" id="usd" placeholder="Investment Amount ($)" step="0.01" />
+  <input type="number" id="fee" placeholder="Fee (% per trade)" step="0.1" value="0.4" />
+  <button onclick="calculate()">Calculate</button>
+  <button id="clearButton" onclick="clearAll()">Clear All</button>
+  <div id="result"></div>
+
+  <script>
+    function calculate() {
+      const buy = parseFloat(document.getElementById('buyPrice').value);
+      const sell = parseFloat(document.getElementById('sellPrice').value);
+      const usd = parseFloat(document.getElementById('usd').value);
+      const fee = parseFloat(document.getElementById('fee').value) / 100;
+
+      const doge = usd / buy;
+      const buyFee = usd * fee;
+      const sellProceeds = doge * sell;
+      const sellFee = sellProceeds * fee;
+      const net = sellProceeds - buyFee - sellFee;
+      const profit = net - usd;
+
+      const resultDiv = document.getElementById('result');
+      let imageSrc = profit >= 0 ? "Doge_Profit.png" : "Doge_Loss.png";
+      let color = profit >= 0 ? "green" : "red";
+
+      resultDiv.innerHTML = `
+        <img src="${imageSrc}" alt="Result Image">
+        <p style="color:${color}; font-size: 18px;">
+          You'd receive $${net.toFixed(2)} after fees.<br>
+          Profit: $${profit.toFixed(2)}
+        </p>
+      `;
+    }
+
+    function clearAll() {
+      document.getElementById('buyPrice').value = '';
+      document.getElementById('sellPrice').value = '';
+      document.getElementById('usd').value = '';
+      document.getElementById('fee').value = '0.4';
+      document.getElementById('result').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
