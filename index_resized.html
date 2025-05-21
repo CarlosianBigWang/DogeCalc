@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOGECALC</title>
+  <style>
+    body {
+      background-color: #fdd835;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .logo img {
+      height: 160px; /* doubled from ~80px */
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #calculateButton {
+      background-color: #e0e0e0;
+    }
+    #clearButton {
+      background-color: #8B0000;
+      color: white;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      background: white;
+    }
+    .result-image {
+      width: 300px; /* 2x the size */
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="Doge_Logo.png" alt="Doge Logo" />
+  </div>
+  <h1>DOGECALC</h1>
+  <p id="livePrice">Live DOGE Price: $0.0000</p>
+  <input type="number" id="buy" placeholder="Buy Price" step="0.0001" />
+  <input type="number" id="sell" placeholder="Sell Price" step="0.0001" />
+  <input type="number" id="amount" placeholder="Investment ($)" step="0.01" />
+  <input type="number" id="fee" placeholder="Fee (%)" value="0.4" step="0.1" />
+  <br>
+  <button id="calculateButton" onclick="calculate()">Calculate</button>
+  <button id="clearButton" onclick="clearAll()">Clear All</button>
+  <br><br>
+  <label>
+    Dark Mode
+    <input type="checkbox" onchange="toggleDarkMode()" />
+  </label>
+  <div id="result"></div>
+
+  <script>
+    async function fetchLivePrice() {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd');
+        const data = await res.json();
+        const price = data.dogecoin.usd;
+        document.getElementById('livePrice').innerText = `Live DOGE Price: $${price}`;
+      } catch {
+        document.getElementById('livePrice').innerText = 'Live DOGE Price: unavailable';
+      }
+    }
+
+    function calculate() {
+      const buy = parseFloat(document.getElementById('buy').value);
+      const sell = parseFloat(document.getElementById('sell').value);
+      const amount = parseFloat(document.getElementById('amount').value);
+      const feeRate = parseFloat(document.getElementById('fee').value) / 100;
+
+      if (isNaN(buy) || isNaN(sell) || isNaN(amount) || isNaN(feeRate)) return;
+
+      const doge = amount / buy;
+      const buyFee = amount * feeRate;
+      const gross = doge * sell;
+      const sellFee = gross * feeRate;
+      const net = gross - buyFee - sellFee;
+      const profit = net - amount;
+
+      const img = profit >= 0 ? "Doge_Profit.png" : "Doge_Loss.png";
+      const color = profit >= 0 ? "green" : "red";
+
+      document.getElementById('result').innerHTML = `
+        <img src="${img}" alt="Result Image" class="result-image" />
+        <p style="color: ${color};">
+          You'd receive $${net.toFixed(2)} after fees.<br>
+          Profit: $${profit.toFixed(2)}
+        </p>
+      `;
+    }
+
+    function clearAll() {
+      document.getElementById('buy').value = "";
+      document.getElementById('sell').value = "";
+      document.getElementById('amount').value = "";
+      document.getElementById('fee').value = "0.4";
+      document.getElementById('result').innerHTML = "";
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.body.style.backgroundColor !== "black";
+      document.body.style.backgroundColor = isDark ? "black" : "#fdd835";
+      document.body.style.color = isDark ? "white" : "black";
+    }
+
+    fetchLivePrice();
+  </script>
+</body>
+</html>
