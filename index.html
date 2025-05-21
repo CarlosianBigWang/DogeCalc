@@ -2,99 +2,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>DOGECALC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background-color: #f1c40f;
       font-family: Arial, sans-serif;
-      padding: 20px;
+      background-color: #FFD700;
       text-align: center;
+      padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
-
     .dark-mode {
       background-color: #121212;
       color: white;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     .logo img {
-      height: 60px;
-      margin-right: 10px;
+      width: 80px;
     }
-
     h1 {
       font-size: 36px;
+      margin-bottom: 20px;
     }
-
     input, button {
-      width: 80%;
+      width: 90%;
+      max-width: 300px;
+      margin: 10px;
       padding: 10px;
-      margin: 10px 0;
-      font-size: 18px;
+      font-size: 16px;
     }
-
     #clearButton {
-      background-color: #a93226;
+      background-color: #8B0000;
       color: white;
     }
-
     #result {
-      background-color: white;
-      padding: 20px;
       margin-top: 20px;
-      border-radius: 8px;
+      padding: 10px;
+      background-color: white;
+      border: 2px solid black;
     }
-
-    .dark-mode #result {
-      background-color: #333;
-      color: white;
+    .profit { color: green; }
+    .loss { color: red; }
+    .result-img {
+      width: 100px;
+      height: auto;
     }
-
-    #result img {
-      width: 100%;
-      max-width: 400px;
-    }
-
-    #livePrice {
-      font-weight: bold;
-      margin: 10px 0 20px 0;
+    .toggle-container {
+      margin: 15px;
     }
   </style>
 </head>
 <body>
   <div class="logo">
-    <img src="doge_logo.png" alt="Doge Logo" />
-    <h1>DOGECALC</h1>
+    <img src="Doge_Logo.png" alt="Doge Logo">
   </div>
-
-  <div id="livePrice">Fetching DOGE price...</div>
-
-  <input type="number" id="buyPrice" placeholder="Buy Price ($)" step="0.0001" />
-  <input type="number" id="sellPrice" placeholder="Sell Price ($)" step="0.0001" />
-  <input type="number" id="usd" placeholder="Investment Amount ($)" step="0.01" />
-  <input type="number" id="fee" placeholder="Fee (% per trade)" value="0.4" step="0.1" />
+  <h1>DOGECALC</h1>
+  <p>Live DOGE Price: $<span id="livePrice">Loading...</span></p>
+  <input type="number" id="buyPrice" placeholder="Buy Price ($)" step="0.0001">
+  <input type="number" id="sellPrice" placeholder="Sell Price ($)" step="0.0001">
+  <input type="number" id="usd" placeholder="Investment Amount ($)" step="0.01">
+  <input type="number" id="fee" placeholder="Fee (% per trade)" value="0.4" step="0.1">
   <button onclick="calculate()">Calculate</button>
   <button id="clearButton" onclick="clearAll()">Clear All</button>
-  <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <div class="toggle-container">
+    <label for="darkToggle">Dark Mode</label>
+    <input type="checkbox" id="darkToggle" onclick="toggleDarkMode()">
+  </div>
 
   <div id="result"></div>
 
   <script>
-    function fetchLivePrice() {
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd')
-        .then(response => response.json())
-        .then(data => {
-          const price = data.dogecoin.usd;
-          document.getElementById("livePrice").innerText = "Live DOGE Price: $" + price;
-        });
+    async function fetchLivePrice() {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd');
+        const data = await res.json();
+        document.getElementById('livePrice').textContent = data.dogecoin.usd.toFixed(4);
+      } catch {
+        document.getElementById('livePrice').textContent = "Error";
+      }
     }
 
     function calculate() {
@@ -102,6 +88,8 @@
       const sell = parseFloat(document.getElementById('sellPrice').value);
       const usd = parseFloat(document.getElementById('usd').value);
       const fee = parseFloat(document.getElementById('fee').value) / 100;
+
+      if (isNaN(buy) || isNaN(sell) || isNaN(usd) || isNaN(fee)) return;
 
       const doge = usd / buy;
       const buyFee = usd * fee;
@@ -111,16 +99,20 @@
       const profit = net - usd;
 
       const resultDiv = document.getElementById('result');
-      let imageSrc = profit >= 0 ? "doge_profit.png" : "doge_loss.png";
-      let color = profit >= 0 ? "green" : "red";
-
-      resultDiv.innerHTML = `
-        <img src="${imageSrc}" alt="Result Image">
-        <p style="color:${color}; font-size: 18px;">
-          You'd receive $${net.toFixed(2)} after fees.<br>
-          Profit: $${profit.toFixed(2)}
-        </p>
-      `;
+      resultDiv.innerHTML = '';
+      const img = document.createElement('img');
+      img.className = 'result-img';
+      if (profit > 0) {
+        resultDiv.className = 'profit';
+        img.src = 'Doge_Profit.png';
+      } else {
+        resultDiv.className = 'loss';
+        img.src = 'Doge_Loss.png';
+      }
+      resultDiv.appendChild(img);
+      const text = document.createElement('p');
+      text.innerHTML = `You'd receive $${net.toFixed(2)} after fees.<br>Profit: $${profit.toFixed(2)}`;
+      resultDiv.appendChild(text);
     }
 
     function clearAll() {
