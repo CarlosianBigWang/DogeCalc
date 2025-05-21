@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DOGECALC</title>
+  <style>
+    body {
+      background-color: #f1c40f;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dark-mode {
+      background-color: #121212;
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      height: 60px;
+      margin-right: 10px;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    input, button {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 18px;
+    }
+
+    #clearButton {
+      background-color: #a93226;
+      color: white;
+    }
+
+    #result {
+      background-color: white;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+
+    .dark-mode #result {
+      background-color: #333;
+      color: white;
+    }
+
+    #result img {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    #livePrice {
+      font-weight: bold;
+      margin: 10px 0 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="doge_logo.png" alt="Doge Logo" />
+    <h1>DOGECALC</h1>
+  </div>
+
+  <div id="livePrice">Fetching DOGE price...</div>
+
+  <input type="number" id="buyPrice" placeholder="Buy Price ($)" step="0.0001" />
+  <input type="number" id="sellPrice" placeholder="Sell Price ($)" step="0.0001" />
+  <input type="number" id="usd" placeholder="Investment Amount ($)" step="0.01" />
+  <input type="number" id="fee" placeholder="Fee (% per trade)" value="0.4" step="0.1" />
+  <button onclick="calculate()">Calculate</button>
+  <button id="clearButton" onclick="clearAll()">Clear All</button>
+  <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <div id="result"></div>
+
+  <script>
+    function fetchLivePrice() {
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd')
+        .then(response => response.json())
+        .then(data => {
+          const price = data.dogecoin.usd;
+          document.getElementById("livePrice").innerText = "Live DOGE Price: $" + price;
+        });
+    }
+
+    function calculate() {
+      const buy = parseFloat(document.getElementById('buyPrice').value);
+      const sell = parseFloat(document.getElementById('sellPrice').value);
+      const usd = parseFloat(document.getElementById('usd').value);
+      const fee = parseFloat(document.getElementById('fee').value) / 100;
+
+      const doge = usd / buy;
+      const buyFee = usd * fee;
+      const sellProceeds = doge * sell;
+      const sellFee = sellProceeds * fee;
+      const net = sellProceeds - buyFee - sellFee;
+      const profit = net - usd;
+
+      const resultDiv = document.getElementById('result');
+      let imageSrc = profit >= 0 ? "doge_profit.png" : "doge_loss.png";
+      let color = profit >= 0 ? "green" : "red";
+
+      resultDiv.innerHTML = `
+        <img src="${imageSrc}" alt="Result Image">
+        <p style="color:${color}; font-size: 18px;">
+          You'd receive $${net.toFixed(2)} after fees.<br>
+          Profit: $${profit.toFixed(2)}
+        </p>
+      `;
+    }
+
+    function clearAll() {
+      document.getElementById('buyPrice').value = '';
+      document.getElementById('sellPrice').value = '';
+      document.getElementById('usd').value = '';
+      document.getElementById('fee').value = '0.4';
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    fetchLivePrice();
+    setInterval(fetchLivePrice, 60000);
+  </script>
+</body>
+</html>
